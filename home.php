@@ -233,3 +233,6 @@ if ($result === false) {
 </html>
 
 <?php
+// Menutup koneksi
+$conn->close();
+?>
