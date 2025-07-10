@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Dashboard - Tugas IoT</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="icon" href="data:,">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        h1 { 
+            margin: 20px 0; 
+            text-align: center; 
+        }
+        .content {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .card {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .card.header {
+            background-color: #1e1e1e;
+            color: white;
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { 
+            background-color: #2196F3; 
+        }
+        input:checked + .slider:before { 
+            transform: translateX(26px); 
+        }
+        table {
+            width: 100%;
+            table-layout: auto;
+            margin: 20px 0;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            text-align: center;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #444;
+        }
+        th {
+            background-color: #333;
+            font-weight: bold;
+        }
+        tr:nth-child(even) { 
+            background-color: #2a2a2a; 
+        }
+        tr:hover { 
+            background-color: #444; 
+        }
+        button {
+            margin-top: 10px;
+            padding: 12px 24px;
+            font-size: 1em;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { 
+            background-color: #1976D2; 
+        }
+    </style>
+    <script>
+        // Fetch sensor data
+        function fetchSensorData() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "fetchdata.php", true);
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    document.getElementById("sensorData").innerHTML = this.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        // Fetch LED status
+        function fetchLedStatus() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "getdata.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    const response = JSON.parse(this.responseText);
+                    const ledCheckbox = document.getElementById("ledStatus");
+                    ledCheckbox.checked = response.LED_STATUS === "ON";
+                }
+            };
+            xhr.send("id=esp32_01");
+        }
+
+        // Update LED status
+        function updateLedStatus() {
+            const ledCheckbox = document.getElementById("ledStatus");
+            const status = ledCheckbox.checked ? "ON" : "OFF";
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "home.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    console.log("LED status updated: " + status);
+                }
+            };
+            xhr.send("led_status=" + status);
+        }
+
+        // Fetch sensor data table
+        function fetchSensorTable() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "recordtable_data.php", true);
+            xhr.onload = function () {
+                if (this.status === 200) {
+                    document.getElementById("sensorTable").innerHTML = this.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        // Initialize data fetching
+        window.onload = function () {
+            fetchSensorData();
+            fetchLedStatus();
+            fetchSensorTable();
+            setInterval(fetchSensorData, 2000);
+            setInterval(fetchLedStatus, 2000);
+        };
+    </script>
+</head>
+<body>
+    <h1>TUGAS IoT DASHBOARD</h1>
+    <div class="content">
+        <!-- Monitoring Data -->
+        <div class="card">
+            <div class="card header">
+                <h3 style="font-size: 1rem;">MONITORING</h3>
+            </div>
+            <div id="sensorData">
+                <p>LDR Status ☀️: <span id="ldrValue">Loading...</span></p>
+                <p>PIR Status 🛡️: <span id="pirValue">Loading...</span></p>
+                <p>Status Sensor: <span id="sensorStatus">Loading...</span></p>
+            </div>
+        </div>
+
+        <!-- LED Control -->
+        <div class="card">
+            <div class="card header">
+                <h3 style="font-size: 1rem;">CONTROLLING</h3>
+            </div>
+            <p>LED 💡</p>
+            <label class="switch">
+                <input type="checkbox" id="ledStatus" onchange="updateLedStatus()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Sensor Data Table -->
+        <div class="card">
+            <div class="card header">
+                <h3 style="font-size: 1rem;">DATA SENSOR</h3>
+            </div>
+            <div id="sensorTable">
+                <p>Loading sensor data...</p>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="card">
+            <div class="card header">
+                <h3 style="font-size: 0.7rem;">LAST UPDATED</h3>
+            </div>
+            <p id="lastUpdated">Loading...</p>
+            <button onclick="window.location.reload()">Refresh Dashboard</button>
+        </div>
+    </div>
+</body>
+</html>
