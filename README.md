@@ -1,5 +1,6 @@
+<h1 align="center">
 # 🌐 ESP32 Web Monitoring & Control System
-
+</h1>
 Sistem ini merupakan aplikasi IoT berbasis web untuk memonitor **sensor LDR** dan **PIR**, serta mengontrol **LED** melalui ESP32 dan interface web. Data dikirim dan disimpan ke dalam MySQL menggunakan koneksi WiFi dan komunikasi HTTP.
 
 <p align="center">
